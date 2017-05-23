@@ -1,21 +1,30 @@
-import React, { Component } from 'react'
-import { findDOMNode } from 'react-dom'
-import screenfull from 'screenfull'
+import React, { Component } from 'react';
+import { findDOMNode } from 'react-dom';
+import screenfull from 'screenfull';
 
-import 'normalize.css/normalize.css'
-import './defaults.scss'
-import './App.scss'
-import './Range.scss'
+import 'normalize.css/normalize.css';
+import './defaults.scss';
+import './App.scss';
+import './Range.scss';
 
-import { version } from '../../package.json'
-import ReactPlayer from '../ReactPlayer'
-import Duration from './Duration'
+import { version } from '../../package.json';
+import ReactPlayer from '../ReactPlayer';
+import Duration from './Duration';
 
 const MULTIPLE_SOURCES = [
-  { src: 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4', type: 'video/mp4' },
-  { src: 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.ogv', type: 'video/ogv' },
-  { src: 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.webm', type: 'video/webm' }
-]
+  {
+    src: 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4',
+    type: 'video/mp4'
+  },
+  {
+    src: 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.ogv',
+    type: 'video/ogv'
+  },
+  {
+    src: 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.webm',
+    type: 'video/webm'
+  }
+];
 
 export default class App extends Component {
   state = {
@@ -25,86 +34,105 @@ export default class App extends Component {
     played: 0,
     loaded: 0,
     duration: 0,
-    playbackRate: 1.0
-  }
+    playbackRate: 1.0,
+    isFullscreen: false
+  };
   load = url => {
     this.setState({
       url,
       played: 0,
       loaded: 0
-    })
-  }
+    });
+  };
   playPause = () => {
-    this.setState({ playing: !this.state.playing })
-  }
+    this.setState((prevState, props) => {
+      return { playing: !prevState.playing };
+    });
+  };
   stop = () => {
-    this.setState({ url: null, playing: false })
-  }
+    this.setState({ url: null, playing: false });
+  };
   setVolume = e => {
-    this.setState({ volume: parseFloat(e.target.value) })
-  }
+    this.setState({ volume: parseFloat(e.target.value) });
+  };
   setPlaybackRate = e => {
-    console.log(parseFloat(e.target.value))
-    this.setState({ playbackRate: parseFloat(e.target.value) })
-  }
+    console.log(parseFloat(e.target.value));
+    this.setState({ playbackRate: parseFloat(e.target.value) });
+  };
   onSeekMouseDown = e => {
-    this.setState({ seeking: true })
-  }
+    this.setState({ seeking: true });
+  };
   onSeekChange = e => {
-    this.setState({ played: parseFloat(e.target.value) })
-  }
+    this.setState({ played: parseFloat(e.target.value) });
+  };
   onSeekMouseUp = e => {
-    this.setState({ seeking: false })
-    this.player.seekTo(parseFloat(e.target.value))
-  }
+    this.setState({ seeking: false });
+    this.player.seekTo(parseFloat(e.target.value));
+  };
   onProgress = state => {
     // We only want to update time slider if we are not currently seeking
     if (!this.state.seeking) {
-      this.setState(state)
+      this.setState(state);
     }
-  }
+  };
   onClickFullscreen = () => {
-    screenfull.request(findDOMNode(this.player))
-  }
+    this.setState(prevState => {
+      !prevState.isFullscreen
+        ? screenfull.request(findDOMNode(this.mediaPlayer))
+        : screenfull.exit(findDOMNode(this.mediaPlayer));
+      return { isFullscreen: !prevState.isFullscreen };
+    });
+  };
   onConfigSubmit = () => {
-    let config
+    let config;
     try {
-      config = JSON.parse(this.configInput.value)
+      config = JSON.parse(this.configInput.value);
     } catch (error) {
-      config = {}
-      console.error('Error setting config:', error)
+      config = {};
+      console.error('Error setting config:', error);
     }
-    this.setState(config)
-  }
+    this.setState(config);
+  };
   renderLoadButton = (url, label) => {
     return (
       <button onClick={() => this.load(url)}>
         {label}
       </button>
-    )
-  }
-  render () {
+    );
+  };
+  render() {
     const {
-      url, playing, volume,
-      played, loaded, duration,
+      url,
+      playing,
+      volume,
+      played,
+      loaded,
+      duration,
+      isFullscreen,
       playbackRate,
       soundcloudConfig,
       vimeoConfig,
       youtubeConfig,
       fileConfig
-    } = this.state
-    const SEPARATOR = ' · '
-
+    } = this.state;
+    const SEPARATOR = ' · ';
     return (
-      <div className='app'>
-        <section className='section'>
+      <div className="app">
+        <section className="section">
           <h1>ReactPlayer Demo</h1>
-          <div className='player-wrapper'>
+          <div
+            ref={mediaPlayer => {
+              this.mediaPlayer = mediaPlayer;
+            }}
+            className="rh5v-DefaultPlayer_component"
+          >
             <ReactPlayer
-              ref={player => { this.player = player }}
-              className='react-player'
-              width='100%'
-              height='100%'
+              ref={player => {
+                this.player = player;
+              }}
+              className="rh5v-DefaultPlayer_video"
+              width="100%"
+              height="100%"
               url={url}
               playing={playing}
               playbackRate={playbackRate}
@@ -123,180 +151,300 @@ export default class App extends Component {
               onProgress={this.onProgress}
               onDuration={duration => this.setState({ duration })}
             />
-          </div>
-
-          <table><tbody>
-            <tr>
-              <th>Controls</th>
-              <td>
+            <div className="rh5v-DefaultPlayer_controls">
+              <div className="rh5v-PlayPause_component ">
                 <button onClick={this.stop}>Stop</button>
-                <button onClick={this.playPause}>{playing ? 'Pause' : 'Play'}</button>
+                <button onClick={this.playPause}>
+                  {playing ? 'Pause' : 'Play'}
+                </button>
                 <button onClick={this.onClickFullscreen}>Fullscreen</button>
                 <button onClick={this.setPlaybackRate} value={1}>1</button>
-                <button onClick={this.setPlaybackRate} value={1.5}>1.5</button>
+                <button onClick={this.setPlaybackRate} value={1.5}>
+                  1.5
+                </button>
                 <button onClick={this.setPlaybackRate} value={2}>2</button>
-              </td>
-            </tr>
-            <tr>
-              <th>Seek</th>
-              <td>
-                <input
-                  type='range' min={0} max={1} step='any'
-                  value={played}
-                  onMouseDown={this.onSeekMouseDown}
-                  onChange={this.onSeekChange}
-                  onMouseUp={this.onSeekMouseUp}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th>Volume</th>
-              <td>
-                <input type='range' min={0} max={1} step='any' value={volume} onChange={this.setVolume} />
-              </td>
-            </tr>
-            <tr>
-              <th>Played</th>
-              <td><progress max={1} value={played} /></td>
-            </tr>
-            <tr>
-              <th>Loaded</th>
-              <td><progress max={1} value={loaded} /></td>
-            </tr>
-          </tbody></table>
+              </div>
+            </div>
+          </div>
+
+          <table>
+            <tbody>
+              <tr>
+                <th>Controls</th>
+                <td>
+                  <button onClick={this.stop}>Stop</button>
+                  <button onClick={this.playPause}>
+                    {playing ? 'Pause' : 'Play'}
+                  </button>
+                  <button onClick={this.onClickFullscreen}>Fullscreen</button>
+                  <button onClick={this.setPlaybackRate} value={1}>1</button>
+                  <button onClick={this.setPlaybackRate} value={1.5}>
+                    1.5
+                  </button>
+                  <button onClick={this.setPlaybackRate} value={2}>2</button>
+                </td>
+              </tr>
+              <tr>
+                <th>Seek</th>
+                <td>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step="any"
+                    value={played}
+                    onMouseDown={this.onSeekMouseDown}
+                    onChange={this.onSeekChange}
+                    onMouseUp={this.onSeekMouseUp}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>Volume</th>
+                <td>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step="any"
+                    value={volume}
+                    onChange={this.setVolume}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>Played</th>
+                <td><progress max={1} value={played} /></td>
+              </tr>
+              <tr>
+                <th>Loaded</th>
+                <td><progress max={1} value={loaded} /></td>
+              </tr>
+            </tbody>
+          </table>
         </section>
-        <section className='section'>
-          <table><tbody>
-            <tr>
-              <th>YouTube</th>
-              <td>
-                {this.renderLoadButton('https://www.youtube.com/watch?v=oUFJJNQGwhk', 'Test A')}
-                {this.renderLoadButton('https://www.youtube.com/watch?v=jNgP6d9HraI', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>SoundCloud</th>
-              <td>
-                {this.renderLoadButton('https://soundcloud.com/miami-nights-1984/accelerated', 'Test A')}
-                {this.renderLoadButton('https://soundcloud.com/tycho/tycho-awake', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>Facebook</th>
-              <td>
-                {this.renderLoadButton('https://www.facebook.com/facebook/videos/10153231379946729/', 'Test A')}
-                {this.renderLoadButton('https://www.facebook.com/FacebookDevelopers/videos/10152454700553553/', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>Vimeo</th>
-              <td>
-                {this.renderLoadButton('https://vimeo.com/90509568', 'Test A')}
-                {this.renderLoadButton('https://vimeo.com/94502406', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>Streamable</th>
-              <td>
-                {this.renderLoadButton('https://streamable.com/moo', 'Test A')}
-                {this.renderLoadButton('https://streamable.com/ifjh', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>Vidme</th>
-              <td>
-                {this.renderLoadButton('https://vid.me/yvi', 'Test A')}
-                {this.renderLoadButton('https://vid.me/yvf', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>Wistia</th>
-              <td>
-                {this.renderLoadButton('https://home.wistia.com/medias/e4a27b971d', 'Test A')}
-                {this.renderLoadButton('https://home.wistia.com/medias/29b0fbf547', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>DailyMotion</th>
-              <td>
-                {this.renderLoadButton('http://www.dailymotion.com/video/x26m1j4_wildlife_animals', 'Test A')}
-                {this.renderLoadButton('http://www.dailymotion.com/video/x26ezj5', 'Test B')}
-              </td>
-            </tr>
-            <tr>
-              <th>Files</th>
-              <td>
-                {this.renderLoadButton('http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4', 'mp4')}
-                {this.renderLoadButton('http://clips.vorwaerts-gmbh.de/big_buck_bunny.ogv', 'ogv')}
-                {this.renderLoadButton('http://clips.vorwaerts-gmbh.de/big_buck_bunny.webm', 'webm')}
-                {this.renderLoadButton(MULTIPLE_SOURCES, 'Multiple')}
-                {this.renderLoadButton('https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8', 'HLS (m3u8)')}
-                {this.renderLoadButton('http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd', 'DASH (mpd)')}
-              </td>
-            </tr>
-            <tr>
-              <th>Custom URL</th>
-              <td>
-                <input ref={input => { this.urlInput = input }} type='text' placeholder='Enter URL' />
-                <button onClick={() => this.setState({ url: this.urlInput.value })}>Load</button>
-              </td>
-            </tr>
-            <tr>
-              <th>Custom config</th>
-              <td>
-                <textarea ref={textarea => { this.configInput = textarea }} placeholder='Enter JSON' />
-                <button onClick={this.onConfigSubmit}>Update Config</button>
-              </td>
-            </tr>
-          </tbody></table>
+        <section className="section">
+          <table>
+            <tbody>
+              <tr>
+                <th>YouTube</th>
+                <td>
+                  {this.renderLoadButton(
+                    'https://www.youtube.com/watch?v=oUFJJNQGwhk',
+                    'Test A'
+                  )}
+                  {this.renderLoadButton(
+                    'https://www.youtube.com/watch?v=jNgP6d9HraI',
+                    'Test B'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>Google Drive</th>
+                <td>
+                  {this.renderLoadButton(
+                    'https://r12---sn-30a7dn7z.c.docs.google.com/videoplayback?id=52f78599a16bbb05&itag=59&source=webdrive&requiressl=yes&ttl=transient&mm=30&mn=sn-30a7dn7z&ms=nxu&mv=m&pl=21&ei=zZEjWa3OA5f_qgWF3Yi4Cw&driveid=0B1X2LG8ZR3Z9cGx1LU9sZ1JDcU0&mime=video/mp4&lmt=1461350440657915&mt=1495503195&ip=183.88.58.156&ipbits=0&expire=1495517709&cp=QVJOV0ZfVldOSlhNOlUteXZMQXF1emdo&sparams=ip,ipbits,expire,id,itag,source,requiressl,ttl,mm,mn,ms,mv,pl,ei,driveid,mime,lmt,cp&signature=3528EDA32C79028F02F06F9E6F807B91F1466CEA.3DBDBCB5C32B9677B3DAE82DC98C321042CB0D88&key=ck2&app=explorer&cpn=KEFcWtwveiEq8thb&c=WEB&cver=1.20170518',
+                    'Test A'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>SoundCloud</th>
+                <td>
+                  {this.renderLoadButton(
+                    'https://soundcloud.com/miami-nights-1984/accelerated',
+                    'Test A'
+                  )}
+                  {this.renderLoadButton(
+                    'https://soundcloud.com/tycho/tycho-awake',
+                    'Test B'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>Facebook</th>
+                <td>
+                  {this.renderLoadButton(
+                    'https://www.facebook.com/facebook/videos/10153231379946729/',
+                    'Test A'
+                  )}
+                  {this.renderLoadButton(
+                    'https://www.facebook.com/FacebookDevelopers/videos/10152454700553553/',
+                    'Test B'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>Vimeo</th>
+                <td>
+                  {this.renderLoadButton(
+                    'https://vimeo.com/90509568',
+                    'Test A'
+                  )}
+                  {this.renderLoadButton(
+                    'https://vimeo.com/94502406',
+                    'Test B'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>Streamable</th>
+                <td>
+                  {this.renderLoadButton(
+                    'https://streamable.com/moo',
+                    'Test A'
+                  )}
+                  {this.renderLoadButton(
+                    'https://streamable.com/ifjh',
+                    'Test B'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>Vidme</th>
+                <td>
+                  {this.renderLoadButton('https://vid.me/yvi', 'Test A')}
+                  {this.renderLoadButton('https://vid.me/yvf', 'Test B')}
+                </td>
+              </tr>
+              <tr>
+                <th>Wistia</th>
+                <td>
+                  {this.renderLoadButton(
+                    'https://home.wistia.com/medias/e4a27b971d',
+                    'Test A'
+                  )}
+                  {this.renderLoadButton(
+                    'https://home.wistia.com/medias/29b0fbf547',
+                    'Test B'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>DailyMotion</th>
+                <td>
+                  {this.renderLoadButton(
+                    'http://www.dailymotion.com/video/x26m1j4_wildlife_animals',
+                    'Test A'
+                  )}
+                  {this.renderLoadButton(
+                    'http://www.dailymotion.com/video/x26ezj5',
+                    'Test B'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>Files</th>
+                <td>
+                  {this.renderLoadButton(
+                    'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4',
+                    'mp4'
+                  )}
+                  {this.renderLoadButton(
+                    'http://clips.vorwaerts-gmbh.de/big_buck_bunny.ogv',
+                    'ogv'
+                  )}
+                  {this.renderLoadButton(
+                    'http://clips.vorwaerts-gmbh.de/big_buck_bunny.webm',
+                    'webm'
+                  )}
+                  {this.renderLoadButton(MULTIPLE_SOURCES, 'Multiple')}
+                  {this.renderLoadButton(
+                    'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8',
+                    'HLS (m3u8)'
+                  )}
+                  {this.renderLoadButton(
+                    'http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd',
+                    'DASH (mpd)'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>Custom URL</th>
+                <td>
+                  <input
+                    ref={input => {
+                      this.urlInput = input;
+                    }}
+                    type="text"
+                    placeholder="Enter URL"
+                  />
+                  <button
+                    onClick={() => this.setState({ url: this.urlInput.value })}
+                  >
+                    Load
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <th>Custom config</th>
+                <td>
+                  <textarea
+                    ref={textarea => {
+                      this.configInput = textarea;
+                    }}
+                    placeholder="Enter JSON"
+                  />
+                  <button onClick={this.onConfigSubmit}>Update Config</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
           <h2>State</h2>
 
-          <table><tbody>
-            <tr>
-              <th>url</th>
-              <td className={!url ? 'faded' : ''}>
-                {(url instanceof Array ? 'Multiple' : url) || 'null'}
-              </td>
-            </tr>
-            <tr>
-              <th>playing</th>
-              <td>{playing ? 'true' : 'false'}</td>
-            </tr>
-            <tr>
-              <th>volume</th>
-              <td>{volume.toFixed(3)}</td>
-            </tr>
-            <tr>
-              <th>played</th>
-              <td>{played.toFixed(3)}</td>
-            </tr>
-            <tr>
-              <th>loaded</th>
-              <td>{loaded.toFixed(3)}</td>
-            </tr>
-            <tr>
-              <th>duration</th>
-              <td><Duration seconds={duration} /></td>
-            </tr>
-            <tr>
-              <th>elapsed</th>
-              <td><Duration seconds={duration * played} /></td>
-            </tr>
-            <tr>
-              <th>remaining</th>
-              <td><Duration seconds={duration * (1 - played)} /></td>
-            </tr>
-          </tbody></table>
+          <table>
+            <tbody>
+              <tr>
+                <th>url</th>
+                <td className={!url ? 'faded' : ''}>
+                  {(url instanceof Array ? 'Multiple' : url) || 'null'}
+                </td>
+              </tr>
+              <tr>
+                <th>playing</th>
+                <td>{playing ? 'true' : 'false'}</td>
+              </tr>
+              <tr>
+                <th>volume</th>
+                <td>{volume.toFixed(3)}</td>
+              </tr>
+              <tr>
+                <th>played</th>
+                <td>{played.toFixed(3)}</td>
+              </tr>
+              <tr>
+                <th>loaded</th>
+                <td>{loaded.toFixed(3)}</td>
+              </tr>
+              <tr>
+                <th>duration</th>
+                <td><Duration seconds={duration} /></td>
+              </tr>
+              <tr>
+                <th>elapsed</th>
+                <td><Duration seconds={duration * played} /></td>
+              </tr>
+              <tr>
+                <th>remaining</th>
+                <td><Duration seconds={duration * (1 - played)} /></td>
+              </tr>
+              <tr>
+                <th>fullscreen</th>
+                <td>{isFullscreen ? 'true' : 'false'}</td>
+              </tr>
+
+            </tbody>
+          </table>
         </section>
-        <footer className='footer'>
+        <footer className="footer">
           Version <strong>{version}</strong>
           {SEPARATOR}
-          <a href='https://github.com/CookPete/react-player'>GitHub</a>
+          <a href="https://github.com/CookPete/react-player">GitHub</a>
           {SEPARATOR}
-          <a href='https://www.npmjs.com/package/react-player'>npm</a>
+          <a href="https://www.npmjs.com/package/react-player">npm</a>
         </footer>
       </div>
-    )
+    );
   }
 }
