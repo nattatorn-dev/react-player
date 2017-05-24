@@ -224,7 +224,7 @@ export default class App extends Component {
                   {playing ? 'Pause' : 'Play'}
                 </button>
                 <div className="seek">
-                  {false
+                  {showAds
                     ? <input
                         disabled
                         type="range"
