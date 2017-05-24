@@ -1,16 +1,25 @@
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
 
-const { string, bool, number, array, oneOfType, shape, object, func } = PropTypes
+const {
+  string,
+  bool,
+  number,
+  array,
+  oneOfType,
+  shape,
+  object,
+  func
+} = PropTypes;
 
 export const propTypes = {
-  url: oneOfType([ string, array ]),
+  url: oneOfType([string, array]),
   playing: bool,
   loop: bool,
   controls: bool,
   volume: number,
   playbackRate: number,
-  width: oneOfType([ string, number ]),
-  height: oneOfType([ string, number ]),
+  width: oneOfType([string, number]),
+  height: oneOfType([string, number]),
   style: object,
   progressFrequency: number,
   playsinline: bool,
@@ -51,7 +60,7 @@ export const propTypes = {
   onError: func,
   onDuration: func,
   onProgress: func
-}
+};
 
 export const defaultProps = {
   playing: false,
@@ -59,8 +68,8 @@ export const defaultProps = {
   controls: false,
   volume: 0.8,
   playbackRate: 1,
-  width: 640,
-  height: 360,
+  width: 480,
+  height: 270,
   hidden: false,
   progressFrequency: 1000,
   playsinline: false,
@@ -92,13 +101,13 @@ export const defaultProps = {
     forceHLS: false,
     forceDASH: false
   },
-  onReady: function () {},
-  onStart: function () {},
-  onPlay: function () {},
-  onPause: function () {},
-  onBuffer: function () {},
-  onEnded: function () {},
-  onError: function () {},
-  onDuration: function () {},
-  onProgress: function () {}
-}
+  onReady: function() {},
+  onStart: function() {},
+  onPlay: function() {},
+  onPause: function() {},
+  onBuffer: function() {},
+  onEnded: function() {},
+  onError: function() {},
+  onDuration: function() {},
+  onProgress: function() {}
+};
