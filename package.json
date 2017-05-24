@@ -95,7 +95,8 @@
     "fetch-jsonp": "^1.0.2",
     "load-script": "^1.0.0",
     "lodash.omit": "^4.5.0",
-    "prop-types": "^15.5.6"
+    "prop-types": "^15.5.6",
+    "react-html5video": "^2.1.0"
   },
   "standard": {
     "parser": "babel-eslint",

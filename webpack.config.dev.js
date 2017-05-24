@@ -38,6 +38,11 @@ module.exports = {
       test: /normalize.css$/,
       loader: 'style-loader?insertAt=top!css-loader',
       include: path.join(__dirname, 'node_modules', 'normalize.css')
+    },
+    {
+      test: /styles.css$/,
+      loader: 'style-loader?insertAt=top!css-loader',
+      include: path.join(__dirname, 'node_modules', 'react-html5video')
     }]
   }
 }
